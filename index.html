@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khám phá Phân tích & Thiết kế Hướng đối tượng (OOAD)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application uses a thematic, four-section structure (Intro, Principles, UML Diagrams, Unified Process) to break down the linear lecture content into explorable modules. The core interaction is in the "UML Diagrams" section, where users can click buttons to dynamically load and compare different diagrams in a central view. This non-linear approach enhances usability by allowing users to connect concepts and diagrams without excessive scrolling, fostering a more active learning experience than a static document. -->
+    <!-- Visualization & Content Choices: History -> Inform -> Interactive Timeline (HTML/CSS) -> Justification: Visualizes progression. Principles -> Inform/Organize -> Interactive Cards (HTML/CSS/JS) -> Justification: Organizes many concepts cleanly. UML Diagrams -> Compare/Organize -> Dynamic Content Viewer with HTML-based diagrams -> Justification: Allows direct comparison of 14 items. Unified Process -> Compare/Change -> Stacked Bar Chart (Chart.js) -> Justification: Visually represents the shift in workflow effort across phases, which is a key concept from the source slide. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 450px;
+            max-height: 60vh;
+        }
+        .uml-diagram-box {
+            border: 1px solid #E0E0E0;
+            background-color: #FFFFFF;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        .uml-actor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        .uml-actor::before {
+            content: '';
+            display: block;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            background-color: #A0AEC0;
+            margin-bottom: 0.25rem;
+        }
+        .uml-actor::after {
+            content: '';
+            display: block;
+            width: 2px;
+            height: 1.5rem;
+            background-color: #A0AEC0;
+            transform: translateY(-0.25rem);
+        }
+        .uml-usecase {
+            border: 1px solid #A0AEC0;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            background-color: #F7FAFC;
+        }
+        .uml-line {
+            width: 100%;
+            height: 1px;
+            background-color: #A0AEC0;
+        }
+        .uml-class {
+            border: 2px solid #4A5568;
+            background-color: #F7FAFC;
+            text-align: center;
+            border-radius: 0.25rem;
+        }
+        .uml-class-title {
+            font-weight: 600;
+            padding: 0.25rem;
+            border-bottom: 1px solid #A0AEC0;
+        }
+        .uml-class-body {
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            text-align: left;
+        }
+        .uml-arrow {
+            position: relative;
+            width: 100%;
+            height: 2px;
+            background-color: #4A5568;
+        }
+        .uml-arrow.dashed {
+            background: repeating-linear-gradient(to right, #4A5568 0, #4A5568 5px, transparent 5px, transparent 10px);
+        }
+        .uml-arrow::after {
+            content: '';
+            position: absolute;
+            right: -1px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 8px solid #4A5568;
+        }
+        .uml-arrow.generalization::after {
+            background-color: #FDFBF8;
+            border-left: 8px solid #4A5568;
+        }
+        [data-tab-content] {
+            display: none;
+        }
+        .active[data-tab-content] {
+            display: block;
+        }
+        .tab-btn.active {
+            background-color: #4C51BF;
+            color: white;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="text-xl font-bold text-indigo-700">OOAD Explorer</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#intro" class="text-gray-600 hover:text-indigo-600">Giới thiệu</a>
+                    <a href="#principles" class="text-gray-600 hover:text-indigo-600">Nguyên tắc & Khái niệm</a>
+                    <a href="#diagrams" class="text-gray-600 hover:text-indigo-600">Sơ đồ UML</a>
+                    <a href="#process" class="text-gray-600 hover:text-indigo-600">Quy trình Hợp nhất</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <section id="intro" class="text-center mb-24">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Phân tích & Thiết kế Hướng đối tượng</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Một hành trình tương tác qua các khái niệm, sơ đồ và quy trình cốt lõi của OOAD và UML.</p>
+        </section>
+
+        <section id="principles" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Nguyên tắc & Khái niệm Cốt lõi</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Nền tảng của tư duy hướng đối tượng. Nhấp vào mỗi thẻ để khám phá chi tiết.</p>
+            <div id="principles-grid" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            </div>
+        </section>
+
+        <section id="diagrams" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Khám phá 14 Sơ đồ UML</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">UML cung cấp một bộ công cụ trực quan để mô hình hóa hệ thống. Chọn một sơ đồ để xem mô tả, ví dụ và các yếu tố chính của nó.</p>
+            
+            <div class="grid lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-3">
+                    <h3 class="font-bold text-lg mb-4 text-indigo-700">Biểu đồ Cấu trúc</h3>
+                    <div id="structure-diagram-buttons" class="flex flex-col space-y-2"></div>
+                    
+                    <h3 class="font-bold text-lg mt-8 mb-4 text-indigo-700">Biểu đồ Hành vi</h3>
+                    <div id="behavior-diagram-buttons" class="flex flex-col space-y-2"></div>
+                </div>
+                
+                <div class="lg:col-span-9 bg-white p-6 rounded-lg shadow-md min-h-[500px]">
+                    <div id="diagram-display">
+                        <div class="text-center text-gray-500 mt-20">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">Chọn một sơ đồ</h3>
+                            <p class="mt-1 text-sm text-gray-500">Chọn một sơ đồ từ danh sách bên trái để bắt đầu.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="process" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Quy trình Hợp nhất (Unified Process)</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Một quy trình phát triển lặp đi lặp lại và tăng dần, tập trung vào kiến trúc và định hướng bởi ca sử dụng.</p>
+            
+            <div class="chart-container">
+                <canvas id="unifiedProcessChart"></canvas>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2025 OOAD Explorer. Được tạo để hỗ trợ học tập.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const principlesData = [
+        { title: 'Trừu tượng hóa', icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z', detail: 'Tập trung vào các đặc điểm cần thiết của đối tượng và bỏ qua những chi tiết không quan trọng. Giúp quản lý sự phức tạp bằng cách tạo ra các mô hình đơn giản hóa của thực tế.' },
+        { title: 'Đóng gói', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', detail: 'Che giấu thông tin và chi tiết cài đặt bên trong của một đối tượng, chỉ cung cấp một giao diện (interface) công khai để các đối tượng khác tương tác. Điều này giúp tăng tính mềm dẻo và bảo mật.' },
+        { title: 'Tính module', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z', detail: 'Phân chia một hệ thống phức tạp thành các phần nhỏ hơn (module) độc lập, dễ quản lý và phát triển.' },
+        { title: 'Tính phân cấp', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', detail: 'Sắp xếp các lớp trừu tượng theo một cấu trúc có thứ bậc, thường là kế thừa, trong đó các lớp con thừa hưởng đặc điểm từ các lớp cha.' },
+        { title: 'Lớp & Đối tượng', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', detail: 'Lớp là khuôn mẫu cho đối tượng. Đối tượng là một thể hiện cụ thể của một lớp, bao gồm thuộc tính (dữ liệu) và phương thức (hành vi).' },
+        { title: 'Đa hình', icon: 'M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z', detail: 'Cho phép các đối tượng khác nhau phản ứng theo cách riêng với cùng một thông điệp. Thường được hiện thực hóa thông qua Interface.' },
+        { title: 'Kế thừa', icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', detail: 'Mối quan hệ "là một dạng của". Một lớp con (subclass) kế thừa thuộc tính và phương thức từ một lớp cha (superclass).' },
+        { title: 'Association', icon: 'M12 4.5v15m7.5-7.5h-15', detail: 'Mô tả một liên kết ngữ nghĩa giữa các lớp. Có thể có bản số (multiplicity) để chỉ số lượng đối tượng tham gia.' }
+    ];
+
+    const principlesGrid = document.getElementById('principles-grid');
+    principlesData.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer';
+        card.innerHTML = `
+            <div class="flex items-center mb-3">
+                <svg class="w-8 h-8 text-indigo-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${p.icon}"></path></svg>
+                <h3 class="text-xl font-bold text-gray-800">${p.title}</h3>
+            </div>
+            <p class="text-gray-600 principle-detail hidden">${p.detail}</p>
+        `;
+        principlesGrid.appendChild(card);
+        card.addEventListener('click', () => {
+            card.querySelector('.principle-detail').classList.toggle('hidden');
+        });
+    });
+
+    const diagrams = {
+        structure: [
+            { id: 'class', name: 'Lớp (Class)' },
+            { id: 'object', name: 'Đối tượng (Object)' },
+            { id: 'package', name: 'Gói (Package)' },
+            { id: 'component', name: 'Thành phần (Component)' },
+            { id: 'deployment', name: 'Triển khai (Deployment)' },
+            { id: 'composite', name: 'Cấu trúc phức hợp' },
+        ],
+        behavior: [
+            { id: 'usecase', name: 'Ca sử dụng (Use Case)' },
+            { id: 'activity', name: 'Hoạt động (Activity)' },
+            { id: 'state', name: 'Máy trạng thái (State Machine)' },
+            { id: 'sequence', name: 'Tuần tự (Sequence)' },
+            { id: 'communication', name: 'Giao tiếp (Communication)' },
+            { id: 'timing', name: 'Thời gian (Timing)' },
+        ]
+    };
+
+    const diagramContent = {
+        class: {
+            title: 'Biểu đồ Lớp (Class Diagram)',
+            description: 'Quan trọng nhất trong UML, mô tả cấu trúc tĩnh của hệ thống bằng cách hiển thị các lớp, thuộc tính, phương thức và mối quan hệ giữa chúng.',
+            elements: ['Lớp (Class)', 'Thuộc tính (Attributes)', 'Phương thức (Operations)', 'Các mối quan hệ (Association, Generalization, etc.)'],
+            example: `
+                <div class="space-y-4">
+                    <div class="uml-class">
+                        <div class="uml-class-title">Account</div>
+                        <div class="uml-class-body">
+                            - balance: double<br>
+                            - owner: String<br>
+                            + withdraw(amount: double)<br>
+                            + deposit(amount: double)
+                        </div>
+                    </div>
+                    <div class="flex justify-center items-center"><div class="uml-arrow generalization w-1/4"></div></div>
+                    <div class="grid grid-cols-2 gap-4">
+                         <div class="uml-class">
+                            <div class="uml-class-title">SavingsAccount</div>
+                            <div class="uml-class-body">+ calculateInterest()</div>
+                        </div>
+                        <div class="uml-class">
+                            <div class="uml-class-title">CheckingAccount</div>
+                            <div class="uml-class-body">- overdraftLimit: double</div>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        usecase: {
+            title: 'Biểu đồ Ca sử dụng (Use Case Diagram)',
+            description: 'Mô tả chức năng của hệ thống từ góc nhìn của người dùng. Nó cho thấy sự tương tác giữa các tác nhân (actors) và các ca sử dụng (use cases).',
+            elements: ['Tác nhân (Actor)', 'Ca sử dụng (Use Case)', 'Hệ thống (System Boundary)', 'Quan hệ (Association, Include, Extend)'],
+            example: `
+                <div class="border-2 border-dashed border-gray-300 p-8 rounded-lg flex items-center justify-around">
+                    <div class="uml-actor">Khách hàng</div>
+                    <div class="space-y-4">
+                        <div class="uml-usecase">Rút tiền</div>
+                        <div class="uml-usecase">Xem số dư</div>
+                    </div>
+                    <div class="uml-actor">Ngân hàng</div>
+                </div>
+            `
+        },
+         sequence: {
+            title: 'Biểu đồ Tuần tự (Sequence Diagram)',
+            description: 'Mô tả sự tương tác giữa các đối tượng theo một trật tự thời gian. Nó nhấn mạnh vào thứ tự và thời điểm các thông điệp được gửi đi giữa các đối tượng.',
+            elements: ['Đường sống (Lifeline)', 'Thanh kích hoạt (Activation Bar)', 'Thông điệp (Message - sync, async, reply)'],
+            example: `
+                <div class="flex justify-around text-center text-sm">
+                    <div>:Client</div><div>:Server</div><div>:Database</div>
+                </div>
+                <div class="flex justify-around h-48 border-l border-dashed border-gray-400 ml-[16.6%] w-0"></div>
+                <div class="flex justify-around h-48 border-l border-dashed border-gray-400 ml-[50%] w-0 -mt-48"></div>
+                <div class="flex justify-around h-48 border-l border-dashed border-gray-400 ml-[83.3%] w-0 -mt-48"></div>
+                <div class="relative -mt-48 p-4 space-y-8">
+                    <div class="flex items-center">
+                        <span class="text-xs mr-2">1: requestData()</span>
+                        <div class="uml-arrow w-[28%] ml-[18%]"></div>
+                    </div>
+                     <div class="flex items-center">
+                        <span class="text-xs mr-2 ml-[35%]">2: query()</span>
+                        <div class="uml-arrow w-[28%] ml-[52%]"></div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs mr-2 ml-[35%]">3: returnData</span>
+                        <div class="uml-arrow dashed w-[28%] mr-[52%] rotate-180"></div>
+                    </div>
+                </div>
+            `
+        },
+        // Add placeholders for other diagrams
+        object: { title: 'Biểu đồ Đối tượng', description: 'Hiển thị các thể hiện của lớp (đối tượng) và mối quan hệ của chúng tại một thời điểm cụ thể.', elements: ['Đối tượng (Object)', 'Liên kết (Link)'], example: '<div class="text-gray-500 p-8 text-center">Ví dụ chưa có sẵn.</div>' },
+        package: { title: 'Biểu đồ Gói', description: 'Tổ chức các phần tử của mô hình thành các nhóm (gói) để quản lý sự phức tạp.', elements: ['Gói (Package)', 'Quan hệ phụ thuộc (Dependency)'], example: '<div class="text-gray-500 p-8 text-center">Ví dụ chưa có sẵn.</div>' },
+        component: { title: 'Biểu đồ Thành phần', description: 'Mô tả cách các thành phần phần mềm được kết nối với nhau thông qua các giao diện (interfaces).', elements: ['Thành phần (Component)', 'Giao diện (Interface)', 'Port'], example: '<div class="text-gray-500 p-8 text-center">Ví dụ chưa có sẵn.</div>' },
+        deployment: { title: 'Biểu đồ Triển khai', description: 'Mô tả cấu hình vật lý của hệ thống, bao gồm các nút (phần cứng) và các thành phần phần mềm chạy trên chúng.', elements: ['Nút (Node)', 'Thành phần (Artifact)', 'Kết nối (Communication Path)'], example: '<div class="text-gray-500 p-8 text-center">Ví dụ chưa có sẵn.</div>' },
+        composite: { title: 'Biểu đồ Cấu trúc phức hợp', description: 'Hiển thị cấu trúc bên trong của một lớp hoặc một thành phần, bao gồm các bộ phận và cổng của nó.', elements: ['Phần (Part)', 'Cổng (Port)', 'Kết nối (Connector)'], example: '<div class="text-gray-500 p-8 text-center">Ví dụ chưa có sẵn.</div>' },
+        activity: { title: 'Biểu đồ Hoạt động', description: 'Mô hình hóa luồng công việc của hệ thống, hiển thị các hoạt động và các quyết định trong một quy trình.', elements: ['Hành động (Action)', 'Nút quyết định (Decision Node)', 'Nút hợp nhất (Merge Node)', 'Luồng điều khiển (Control Flow)'], example: '<div class="text-gray-500 p-8 text-center">Ví dụ chưa có sẵn.</div>' },
+        state: { title: 'Biểu đồ Máy trạng thái', description: 'Mô tả các trạng thái khác nhau mà một đối tượng có thể trải qua trong vòng đời của nó và các sự kiện gây ra sự chuyển đổi trạng thái.', elements: ['Trạng thái (State)', 'Chuyển tiếp (Transition)', 'Sự kiện (Event)'], example: '<div class="text-gray-500 p-8 text-center">Ví dụ chưa có sẵn.</div>' },
+        communication: { title: 'Biểu đồ Giao tiếp', description: 'Tương tự biểu đồ tuần tự nhưng tập trung vào các mối quan hệ (liên kết) giữa các đối tượng thay vì thứ tự thời gian.', elements: ['Đối tượng (Object)', 'Liên kết (Link)', 'Thông điệp (Message)'], example: '<div class="text-gray-500 p-8 text-center">Ví dụ chưa có sẵn.</div>' },
+        timing: { title: 'Biểu đồ Thời gian', description: 'Mô tả hành vi của các đối tượng trong một khoảng thời gian cụ thể, đặc biệt hữu ích cho các hệ thống thời gian thực.', elements: ['Đường sống (Lifeline)', 'Trạng thái theo thời gian', 'Ràng buộc thời gian'], example: '<div class="text-gray-500 p-8 text-center">Ví dụ chưa có sẵn.</div>' },
+    };
+    
+    const structureButtons = document.getElementById('structure-diagram-buttons');
+    const behaviorButtons = document.getElementById('behavior-diagram-buttons');
+    const diagramDisplay = document.getElementById('diagram-display');
+    const allButtons = [];
+
+    function createButtons(diagramList, container) {
+        diagramList.forEach(d => {
+            const button = document.createElement('button');
+            button.className = 'tab-btn w-full text-left px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-indigo-100 transition-colors';
+            button.textContent = d.name;
+            button.dataset.diagramId = d.id;
+            container.appendChild(button);
+            allButtons.push(button);
+        });
+    }
+
+    createButtons(diagrams.structure, structureButtons);
+    createButtons(diagrams.behavior, behaviorButtons);
+
+    allButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const diagramId = button.dataset.diagramId;
+            const content = diagramContent[diagramId];
+            
+            allButtons.forEach(btn => btn.classList.remove('active', 'bg-indigo-600', 'text-white'));
+            button.classList.add('active', 'bg-indigo-600', 'text-white');
+
+            if (content) {
+                diagramDisplay.innerHTML = `
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">${content.title}</h3>
+                    <p class="text-gray-600 mb-6">${content.description}</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-gray-700">Ví dụ minh họa</h4>
+                            <div class="mt-4">${content.example}</div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-gray-700">Các yếu tố chính</h4>
+                            <ul class="list-disc list-inside text-gray-600 space-y-1 mt-2">
+                                ${content.elements.map(el => `<li>${el}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    });
+
+    const ctx = document.getElementById('unifiedProcessChart').getContext('2d');
+    const unifiedProcessChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Inception (Khởi tạo)', 'Elaboration (Phát triển)', 'Construction (Xây dựng)', 'Transition (Chuyển giao)'],
+            datasets: [
+                { label: 'Mô hình hóa KD', data: [80, 20, 5, 5], backgroundColor: '#6366F1' },
+                { label: 'Yêu cầu', data: [50, 85, 15, 5], backgroundColor: '#818CF8' },
+                { label: 'Phân tích & TK', data: [20, 80, 40, 10], backgroundColor: '#A5B4FC' },
+                { label: 'Thực thi', data: [10, 40, 85, 20], backgroundColor: '#C7D2FE' },
+                { label: 'Kiểm thử', data: [5, 30, 60, 80], backgroundColor: '#E0E7FF' },
+                { label: 'Triển khai', data: [5, 10, 20, 90], backgroundColor: '#EEF2FF' }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: { display: true, text: 'Mức độ tập trung công việc qua các pha của Unified Process' },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Nỗ lực tương đối (%)' } }
+            }
+        }
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+});
+</script>
+
+</body>
+</html>
